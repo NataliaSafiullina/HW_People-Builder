@@ -9,7 +9,7 @@ import java.util.OptionalInt;
 public class Person {
     protected final String name;
     protected final String surname;
-    protected int age;
+    protected OptionalInt age;
     protected String city;
 
     // Конструкторы
@@ -21,13 +21,19 @@ public class Person {
     public Person(String name, String surname, int age) {
         this.name = name;
         this.surname = surname;
-        this.age = age;
+        this.age = OptionalInt.of(age);
     }
 
     public Person(String name, String surname, int age, String city) {
         this.name = name;
         this.surname = surname;
-        this.age = age;
+        this.age = OptionalInt.of(age);
+        this.city = city;
+    }
+
+    public Person(String name, String surname, String city) {
+        this.name = name;
+        this.surname = surname;
         this.city = city;
     }
 
@@ -46,7 +52,7 @@ public class Person {
         return surname;
     }
 
-    int getAge() {
+    public OptionalInt getAge() {
         return age;
     }
 
@@ -55,19 +61,22 @@ public class Person {
     }
 
     public boolean hasAge() {
-        return age >= 0;
+        if (age != null && age.isPresent()) {
+            return age.getAsInt() >= 0;
+        }
+        else {
+            return false;
+        }
     }
 
     public boolean hasAddress() {
         return !city.isEmpty();
     }
 
-    public void setAddress(String address) {
-        city = address;
-    }
-
     public void happyBirthday() {
-        age += 1;
+        if (hasAge()) {
+            age = OptionalInt.of(age.getAsInt() + 1);
+        }
     }
 
     @Override
@@ -75,7 +84,7 @@ public class Person {
         return "Person{" +
                 "name='" + name + '\'' +
                 ", surname='" + surname + '\'' +
-                ", age=" + age +
+                ", age=" + (!hasAge() ? " 'Возраст не известен'" : age.getAsInt()) +
                 ", city='" + city + '\'' +
                 '}';
     }
@@ -93,13 +102,15 @@ public class Person {
         return Objects.hash(getName(), getSurname());
     }
 
-    // Метод для получения полу заполненного билдера для ребёнка в класс Person
+    /**
+     * Метод для получения полу заполненного билдера для ребёнка в класс Person
+     * */
     public PersonBuilder newChildBuilder() {
         // Создадим объект билдера
         PersonBuilder child = new PersonBuilder();
         // Переносим данные из родителя в ребёнка
         child.surname = this.surname;
-        child.age = 1;
+        child.age = OptionalInt.of(0);
         child.city = this.city;
         return child;
     }

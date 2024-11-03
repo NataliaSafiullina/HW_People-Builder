@@ -1,5 +1,7 @@
 package ru.safiullina;
 
+import java.util.OptionalInt;
+
 /**
  * Класс PersonBuilder служит для конструирования объектов класса Person
  */
@@ -7,7 +9,7 @@ public class PersonBuilder {
 
     protected String name;
     protected String surname;
-    protected int age;
+    protected OptionalInt age;
     protected String city;
 
     public PersonBuilder setName(String name) {
@@ -21,7 +23,7 @@ public class PersonBuilder {
     }
 
     public PersonBuilder setAge(int age) {
-        this.age = age;
+        this.age = OptionalInt.of(age);
         return this;
     }
 
@@ -30,8 +32,7 @@ public class PersonBuilder {
         return this;
     }
 
-    public Person build() {
-        String error = "Запись не создана. ";
+    public Person build() throws IllegalArgumentException, IllegalStateException {
 
         // Построим строку сообщения исключения, если есть ошибки в заполнении объекта
         String stringException = ((name == null) ? " Не задано имя. " : "") +
@@ -39,18 +40,26 @@ public class PersonBuilder {
 
         // Если не заданы имя или фамилия, выбросим исключение
         if (!stringException.isEmpty()) {
-            throw new IllegalStateException(error + stringException);
+            throw new IllegalStateException(stringException);
         }
 
         // Проверим корректность возраста
-        if (age <= 0) {
-            throw new IllegalArgumentException(error + "Возраст отрицательное число или 0");
+        if (age != null && age.isPresent() && age.getAsInt()< 0) {
+            throw new IllegalArgumentException(" Возраст отрицательное число ");
         }
 
         // Создаем и возвращаем объект Person
-        return new Person(name,
-                surname,
-                age,
-                city);
+        if (age != null && age.isPresent()) {
+            return new Person(name,
+                    surname,
+                    age.getAsInt(),
+                    city);
+        }
+        else {
+            return new Person(name,
+                    surname,
+                    city);
+        }
+
     }
 }
